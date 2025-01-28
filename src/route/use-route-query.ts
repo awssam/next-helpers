@@ -3,28 +3,19 @@
 import { useCallback } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
-// Use a union type instead of overloads
 function useRouteQuery<T extends string | number>(
   key: string,
   defaultValue?: T
-): [T, (newValue: T) => void] {
+): T extends number ? [number, (newValue: number) => void] : [string, (newValue: string) => void] {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
 
   const urlValue = searchParams.get(key);
 
-  // Type-safe value handling
-  let currentValue: T;
-  if (typeof defaultValue === "number") {
-    const numericValue = urlValue ? Number(urlValue) : defaultValue;
-    currentValue = (isNaN(numericValue) ? defaultValue : numericValue) as T;
-  } else {
-    currentValue = (urlValue ?? defaultValue ?? "") as T;
-  }
-
+  // Create setValue unconditionally
   const setValue = useCallback(
-    (newValue: T) => {
+    (newValue: string | number) => {
       const params = new URLSearchParams(searchParams.toString());
       const stringValue = newValue.toString();
 
@@ -39,7 +30,16 @@ function useRouteQuery<T extends string | number>(
     [key, pathname, router, searchParams]
   );
 
-  return [currentValue, setValue];
+  // Determine current value
+  let currentValue: string | number;
+  if (typeof defaultValue === "number") {
+    const numericValue = urlValue ? Number(urlValue) : defaultValue;
+    currentValue = isNaN(numericValue) ? defaultValue : numericValue;
+    return [currentValue, setValue as (newValue: number) => void] as any;
+  } else {
+    currentValue = urlValue ?? defaultValue ?? "";
+    return [currentValue, setValue as (newValue: string) => void] as any;
+  }
 }
 
 export { useRouteQuery };
