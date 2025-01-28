@@ -31,18 +31,26 @@ function useRouteQuery(key, defaultValue) {
   const searchParams = (0, import_navigation.useSearchParams)();
   const router = (0, import_navigation.useRouter)();
   const pathname = (0, import_navigation.usePathname)();
-  const currentValue = searchParams.get(key) ?? defaultValue ?? "";
+  const urlValue = searchParams.get(key);
+  let currentValue;
+  if (typeof defaultValue === "number") {
+    const numericValue = urlValue ? Number(urlValue) : defaultValue;
+    currentValue = isNaN(numericValue) ? defaultValue : numericValue;
+  } else {
+    currentValue = urlValue ?? defaultValue ?? "";
+  }
   const setValue = (0, import_react.useCallback)(
     (newValue) => {
       const params = new URLSearchParams(searchParams.toString());
-      if (newValue) {
-        params.set(key, newValue);
+      const stringValue = newValue.toString();
+      if (stringValue) {
+        params.set(key, stringValue);
       } else {
         params.delete(key);
       }
       router.push(`${pathname}?${params.toString()}`);
     },
-    [searchParams, key, router, pathname]
+    [key, pathname, router, searchParams]
   );
   return [currentValue, setValue];
 }

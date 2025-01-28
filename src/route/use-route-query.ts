@@ -3,40 +3,30 @@
 import { useCallback } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
-// Overload for number type (requires defaultValue)
-//@ts-expect-error error dyal l khra.
-function useRouteQuery(
+// Use a union type instead of overloads
+function useRouteQuery<T extends string | number>(
   key: string,
-  defaultValue: number
-): [number, (newValue: number) => void];
-// Overload for string type (defaultValue optional)
-function useRouteQuery(
-  key: string,
-  defaultValue?: string
-): [string, (newValue: string) => void];
-// Implementation
-function useRouteQuery(
-  key: string,
-  defaultValue?: string | number
-): [string | number, (newValue: string | number) => void] {
+  defaultValue?: T
+): [T, (newValue: T) => void] {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
 
   const urlValue = searchParams.get(key);
 
-  // Determine current value with type handling
-  let currentValue: string | number = urlValue ?? defaultValue ?? "";
+  // Type-safe value handling
+  let currentValue: T;
   if (typeof defaultValue === "number") {
-    currentValue = urlValue ? Number(urlValue) : defaultValue;
-    if (isNaN(currentValue)) currentValue = defaultValue;
+    const numericValue = urlValue ? Number(urlValue) : defaultValue;
+    currentValue = (isNaN(numericValue) ? defaultValue : numericValue) as T;
+  } else {
+    currentValue = (urlValue ?? defaultValue ?? "") as T;
   }
 
   const setValue = useCallback(
-    (newValue: string | number) => {
+    (newValue: T) => {
       const params = new URLSearchParams(searchParams.toString());
-      const stringValue =
-        typeof newValue === "number" ? newValue.toString() : newValue;
+      const stringValue = newValue.toString();
 
       if (stringValue) {
         params.set(key, stringValue);

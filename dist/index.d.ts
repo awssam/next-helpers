@@ -1,10 +1,3 @@
-/**
- * A hook to get/set a specific query parameter in the URL.
- *
- * @param key          The query parameter key (e.g. "search")
- * @param defaultValue Optional default value if the key doesn’t exist in the URL
- * @returns A tuple: [currentValue, setValue]
- */
-declare function useRouteQuery(key: string, defaultValue?: string): [string, (newValue: string) => void];
+declare function useRouteQuery<T extends string | number>(key: string, defaultValue?: T): [T, (newValue: T) => void];
 
 export { useRouteQuery };
