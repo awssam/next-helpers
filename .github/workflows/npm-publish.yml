@@ -27,6 +27,7 @@ jobs:
       - run: npm test
 
       - name: Bump version and tag
+        id: bump-version
         run: |
           npm version patch --no-git-tag-version
           git config user.name "GitHub Actions"
@@ -35,6 +36,7 @@ jobs:
           git commit -m "CI: Bump version to $(node -p "require('./package.json').version")"
           git tag v$(node -p "require('./package.json').version")
           git push origin main --follow-tags
+          echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
       - name: Publish to npm
         run: npm publish --access public
@@ -44,9 +46,9 @@ jobs:
       - name: Create GitHub Release
         uses: actions/create-release@v2
         with:
-          tag_name: v$(node -p "require('./package.json').version")
-          release_name: v$(node -p "require('./package.json').version")
-          body: "Automatic release for version v$(node -p "require('./package.json').version")"
+          tag_name: v${{ steps.bump-version.outputs.version }}
+          release_name: v${{ steps.bump-version.outputs.version }}
+          body: "Automatic release for version v${{ steps.bump-version.outputs.version }}"
           draft: false
           prerelease: false
         env:
