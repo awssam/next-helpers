@@ -4,7 +4,7 @@ import { useCallback } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 // Overload for number type (requires defaultValue)
-//@ts-expect-error error dyal l khra
+//@ts-expect-error error dyal l khra.
 function useRouteQuery(
   key: string,
   defaultValue: number
