@@ -21,7 +21,8 @@
     "name": "Awssam Saidi"
   },
   "repository": {
-    "url": "https://github.com/awssam/next-helpers"
+    "type": "git",
+    "url": "git+https://github.com/awssam/next-helpers.git"
   },
   "license": "MIT",
   "devDependencies": {
