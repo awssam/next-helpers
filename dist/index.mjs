@@ -6,13 +6,6 @@ function useRouteQuery(key, defaultValue) {
   const router = useRouter();
   const pathname = usePathname();
   const urlValue = searchParams.get(key);
-  let currentValue;
-  if (typeof defaultValue === "number") {
-    const numericValue = urlValue ? Number(urlValue) : defaultValue;
-    currentValue = isNaN(numericValue) ? defaultValue : numericValue;
-  } else {
-    currentValue = urlValue ?? defaultValue ?? "";
-  }
   const setValue = useCallback(
     (newValue) => {
       const params = new URLSearchParams(searchParams.toString());
@@ -26,7 +19,15 @@ function useRouteQuery(key, defaultValue) {
     },
     [key, pathname, router, searchParams]
   );
-  return [currentValue, setValue];
+  let currentValue;
+  if (typeof defaultValue === "number") {
+    const numericValue = urlValue ? Number(urlValue) : defaultValue;
+    currentValue = isNaN(numericValue) ? defaultValue : numericValue;
+    return [currentValue, setValue];
+  } else {
+    currentValue = urlValue ?? defaultValue ?? "";
+    return [currentValue, setValue];
+  }
 }
 export {
   useRouteQuery
