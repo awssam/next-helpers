@@ -1,30 +1,53 @@
-name: Node.js Package
+name: Publish to npm on Main
 
 on:
-  release:
-    types: [created]
+  push:
+    branches:
+      - main
 
 jobs:
-  build:
+  release_and_publish:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - run: npm ci
-      - run: npm test
+    environment: production
+    permissions:
+      contents: write
+      packages: write
 
-  publish-npm:
-    needs: build
-    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           registry-url: https://registry.npmjs.org/
+
       - run: npm ci
-      - run: npm publish --access public
+      - run: npm test
+
+      - name: Bump version and tag
+        run: |
+          npm version patch --no-git-tag-version
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add package.json package-lock.json
+          git commit -m "CI: Bump version to $(node -p "require('./package.json').version")"
+          git tag v$(node -p "require('./package.json').version")
+          git push origin main --follow-tags
+
+      - name: Publish to npm
+        run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v2
+        with:
+          tag_name: v$(node -p "require('./package.json').version")
+          release_name: v$(node -p "require('./package.json').version")
+          body: "Automatic release for version v$(node -p "require('./package.json').version")"
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
