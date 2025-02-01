@@ -54,6 +54,60 @@ function useRouteQuery(key, defaultValue) {
     return [currentValue, setValue];
   }
 }
+
+// src/window/use-demension.ts
+import { useMemo, useState, useEffect, useLayoutEffect } from "react";
+var useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
+var defaultState = Object.freeze({
+  x: 0,
+  y: 0,
+  width: 0,
+  height: 0,
+  top: 0,
+  left: 0,
+  bottom: 0,
+  right: 0
+});
+function useDimension() {
+  const [element, ref] = useState(null);
+  const [rect, setRect] = useState(defaultState);
+  const observer = useMemo(() => {
+    if (typeof window === "undefined" || !window.ResizeObserver) {
+      return null;
+    }
+    try {
+      return new window.ResizeObserver((entries) => {
+        if (entries[0]) {
+          const { x, y, width, height, top, left, bottom, right } = entries[0].contentRect;
+          const newRect = { x, y, width, height, top, left, bottom, right };
+          if (rect.x !== x || rect.y !== y || rect.width !== width || rect.height !== height || rect.top !== top || rect.left !== left || rect.bottom !== bottom || rect.right !== right) {
+            setRect(newRect);
+          }
+        }
+      });
+    } catch (error) {
+      console.error("ResizeObserver initialization failed:", error);
+      return null;
+    }
+  }, [rect]);
+  useIsomorphicLayoutEffect(() => {
+    if (!element || !observer) return;
+    observer.observe(element);
+    return () => {
+      if (observer) {
+        observer.disconnect();
+      }
+    };
+  }, [element, observer]);
+  return [ref, rect];
+}
+var useDimensionFallback = () => {
+  console.warn("ResizeObserver is not supported in this environment. Falling back to default dimensions.");
+  return [() => {
+  }, defaultState];
+};
 export {
+  useDimension,
+  useDimensionFallback,
   useRouteQuery
 };
