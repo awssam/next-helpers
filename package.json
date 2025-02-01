@@ -1,10 +1,10 @@
 {
   "name": "@awssam/next-helpers",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "A small collection of Next.js client-side hooks and helpers",
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",  
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsup src/index.ts --dts --format esm,cjs",
     "test": "echo \"No tests yet!\" && exit 0",
